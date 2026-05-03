@@ -1,47 +1,30 @@
-# ─────────────────────────────────────────────
-# WildQuants — .dockerignore
-# Placed at the root (same level as docker-compose.yaml)
-# Applies to all services since context: . is set in compose
-# ─────────────────────────────────────────────
-
-
-# ─────────────────────────────────────────────
 # Secrets — never send to build context
-# ─────────────────────────────────────────────
 .env
 *.pem
 *.key
 *.cert
 
 
-# ─────────────────────────────────────────────
 # Git
-# ─────────────────────────────────────────────
 .git
 .gitignore
 .gitattributes
 
 
-# ─────────────────────────────────────────────
 # Node / Frontend
-# ─────────────────────────────────────────────
 code/frontend/node_modules
 code/frontend/.next
 code/frontend/out
 code/frontend/.cache
 
 
-# ─────────────────────────────────────────────
 # Java / Maven
-# ─────────────────────────────────────────────
 code/gateway-service/target
 code/gateway-service/.mvn/wrapper/maven-wrapper.jar
 **/*.class
 
 
-# ─────────────────────────────────────────────
 # Python
-# ─────────────────────────────────────────────
 code/agent-service/__pycache__
 code/agent-service/**/__pycache__
 code/agent-service/.venv
@@ -52,9 +35,8 @@ code/agent-service/.pytest_cache
 **/*.pyd
 
 
-# ─────────────────────────────────────────────
+
 # ML artefacts — large files, not needed at build time
-# ─────────────────────────────────────────────
 **/*.pt
 **/*.pth
 **/*.bin
@@ -62,27 +44,17 @@ code/agent-service/.pytest_cache
 **/*.safetensors
 code/agent-service/models
 
-
-# ─────────────────────────────────────────────
 # Infra / Docker — no need to send Dockerfiles
-# into their own build context
-# ─────────────────────────────────────────────
 infra
-docker-compose.yaml
+docker.compose.yaml
 
-
-# ─────────────────────────────────────────────
 # IDEs and OS noise
-# ─────────────────────────────────────────────
 .idea
 .vscode
 *.iml
 .DS_Store
 Thumbs.db
 
-
-# ─────────────────────────────────────────────
 # Docs and markdown — not needed in images
-# ─────────────────────────────────────────────
 *.md
 docs

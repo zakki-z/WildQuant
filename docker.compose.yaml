@@ -75,7 +75,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: infra/node/dockerfile
+      dockerfile: infra/nodejs/dockerfile
     image: wildquants/frontend:latest
     container_name: frontend
     restart: unless-stopped
