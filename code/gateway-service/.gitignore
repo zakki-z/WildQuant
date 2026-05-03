@@ -29,5 +29,10 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
+# OS / IDE
+.DS_Store
+.idea/
 .vscode/
+#secrets
+.env
+

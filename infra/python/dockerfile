@@ -1,0 +1,38 @@
+# Stage 1 — Builder
+# Use full Python image to compile wheels for packages that need C extensions
+FROM python:3.10-slim AS builder
+
+WORKDIR /build
+
+# Install build tools only in this stage
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc g++ && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY code/agent-service/requirements.txt .
+
+# Compile and install wheels into an isolated prefix so we can copy cleanly
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Stage 2 — Runner
+FROM python:3.10-slim AS runner
+
+# Security: create a non-root system user
+RUN groupadd -r wildquants && useradd -r -g wildquants -s /sbin/nologin -M wildquants
+
+WORKDIR /app
+
+# Copy installed packages from builder — no gcc, no apt cache, no build tools
+COPY --from=builder /install /usr/local
+
+# Copy application source
+COPY code/agent-service/app ./app
+
+# Lock down ownership
+RUN chown -R wildquants:wildquants /app
+
+USER wildquants
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

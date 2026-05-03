@@ -1,0 +1,33 @@
+# Stage 1 — Builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /build
+
+# Cache dependencies layer separately from source —
+# only re-downloads when pom.xml changes, not on every code edit
+COPY code/gateway-service/pom.xml .
+RUN mvn dependency:go-offline -q
+
+# Copy source and build the fat jar
+COPY code/gateway-service/src ./src
+RUN mvn clean package -DskipTests -q
+
+# Stage 2 — Runner
+FROM eclipse-temurin:21-jre-alpine AS runner
+
+# Security: create a non-root system user with no shell and no home dir
+RUN addgroup -S wildquants && adduser -S -G wildquants -H -s /sbin/nologin wildquants
+
+WORKDIR /app
+
+# Copy only the compiled jar — no source, no Maven, no build tools
+COPY --from=builder /build/target/*.jar app.jar
+
+# Lock down ownership
+RUN chown wildquants:wildquants app.jar
+
+USER wildquants
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

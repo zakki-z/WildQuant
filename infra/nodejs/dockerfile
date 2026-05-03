@@ -1,0 +1,38 @@
+# Stage 1 — Builder
+FROM node:20-alpine AS builder
+
+WORKDIR /build
+
+# Cache node_modules separately from source
+COPY code/frontend/package*.json ./
+RUN npm ci --frozen-lockfile
+
+# Copy source and build the Next.js production bundle
+COPY code/frontend/ .
+
+# next.config.js must set output: 'standalone' for the slim runner below
+RUN npm run build
+
+# Stage 2 — Runner
+FROM node:20-alpine AS runner
+
+# Security: create a non-root system user
+RUN addgroup -S wildquants && adduser -S -G wildquants -H -s /sbin/nologin wildquants
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Next.js standalone output bundles the minimal server + required node_modules.
+# Copy only what's needed — no dev deps, no source, no build cache.
+COPY --from=builder /build/.next/standalone ./
+COPY --from=builder /build/.next/static ./.next/static
+COPY --from=builder /build/public ./public
+
+RUN chown -R wildquants:wildquants /app
+
+USER wildquants
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
